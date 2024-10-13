@@ -123,6 +123,14 @@ export async function getLocation(ip: string, req: NextApiRequestCollect) {
   }
 }
 
+function detectAppOs(userAgent: string) {
+  return userAgent.match(/os=([^;]+)/)?.[1];
+}
+
+function detectAppDevice(userAgent: string) {
+  return userAgent.match(/device=([^;]+)/)?.[1];
+}
+
 export async function getClientInfo(req: NextApiRequestCollect) {
   const userAgent = req.headers['user-agent'];
   const ip = req.body?.payload?.ip || getIpAddress(req);
@@ -132,8 +140,8 @@ export async function getClientInfo(req: NextApiRequestCollect) {
   const subdivision2 = location?.subdivision2;
   const city = location?.city;
   const browser = browserName(userAgent);
-  const os = detectOS(userAgent) as string;
-  const device = getDevice(req.body?.payload?.screen, os);
+  const os = detectAppOs(userAgent) || detectOS(userAgent) as string;
+  const device = detectAppDevice(userAgent) || getDevice(req.body?.payload?.screen, os);
 
   return { userAgent, browser, os, ip, country, subdivision1, subdivision2, city, device };
 }
