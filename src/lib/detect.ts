@@ -140,8 +140,13 @@ export async function getClientInfo(req: NextApiRequestCollect) {
   const subdivision2 = location?.subdivision2;
   const city = location?.city;
   const browser = browserName(userAgent);
-  const os = detectAppOs(req.headers['AppInfo'] || "") || detectOS(userAgent) as string;
-  const device = detectAppDevice(req.headers['AppInfo'] || "") || getDevice(req.body?.payload?.screen, os);
+  const appInfo = req.headers['AppInfo'] || "";
+  if (!appInfo) {
+    console.log(`Client app: ${appInfo}`)
+  }
+
+  const os = detectAppOs(appInfo) || detectOS(userAgent) as string;
+  const device = detectAppDevice(appInfo) || getDevice(req.body?.payload?.screen, os);
 
   return { userAgent, browser, os, ip, country, subdivision1, subdivision2, city, device };
 }
