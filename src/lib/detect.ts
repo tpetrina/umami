@@ -124,11 +124,11 @@ export async function getLocation(ip: string, req: NextApiRequestCollect) {
 }
 
 function detectAppOs(userAgent: string) {
-  return userAgent.match(/os=([^;]+)/)?.[1];
+  return userAgent.match(/os=(\w+)/)?.[1];
 }
 
 function detectAppDevice(userAgent: string) {
-  return userAgent.match(/device=([^;]+)/)?.[1];
+  return userAgent.match(/device=(\w+)/)?.[1];
 }
 
 export async function getClientInfo(req: NextApiRequestCollect) {
