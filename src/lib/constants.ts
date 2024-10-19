@@ -282,9 +282,10 @@ export const DESKTOP_OS = [
   'Windows XP',
 ];
 
-export const MOBILE_OS = ['Amazon OS', 'Android OS', 'BlackBerry OS', 'iOS', 'Windows Mobile'];
+export const MOBILE_OS = ['Amazon OS', 'Android', 'Android OS', 'BlackBerry OS', 'iOS', 'Windows Mobile'];
 
 export const OS_NAMES = {
+  'Android': 'Android',
   'Android OS': 'Android',
   'Chrome OS': 'ChromeOS',
   'Mac OS': 'macOS',
