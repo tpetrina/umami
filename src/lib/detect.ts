@@ -140,8 +140,8 @@ export async function getClientInfo(req: NextApiRequestCollect) {
   const subdivision2 = location?.subdivision2;
   const city = location?.city;
   const browser = browserName(userAgent);
-  const appInfo = req.headers['AppInfo'] || "";
-  if (!appInfo) {
+  const appInfo = req.headers['x-massivepixel-appinfo'] || "";
+  if (!!appInfo) {
     console.log(`Client app: ${appInfo}`)
   }
 
