@@ -133,7 +133,7 @@ function detectAppDevice(userAgent: string) {
 
 export async function getClientInfo(req: NextApiRequestCollect) {
   const userAgent = req.headers['user-agent'];
-  const ip = req.headers['AppUser'] || req.body?.payload?.ip || getIpAddress(req);
+  const ip = req.headers['x-massivepixel-appuser'] || req.body?.payload?.ip || getIpAddress(req);
   const location = await getLocation(ip, req);
   const country = location?.country;
   const subdivision1 = location?.subdivision1;
