@@ -123,12 +123,19 @@ export async function getLocation(ip: string, req: NextApiRequestCollect) {
   }
 }
 
-function detectAppOs(userAgent: string) {
-  return userAgent.match(/os=(\w+)/)?.[1];
+function detectAppOs(appInfo: string) {
+  return appInfo.match(/os=(\w+)/)?.[1];
 }
 
-function detectAppDevice(userAgent: string) {
-  return userAgent.match(/device=(\w+)/)?.[1];
+function detectAppDevice(appInfo: string) {
+  switch (appInfo) {
+    case 'iPhone':
+    case 'Android':
+      return 'mobile';
+    case 'iPad':
+      return 'tablet';
+  }
+  return appInfo.match(/device=(\w+)/)?.[1];
 }
 
 export async function getClientInfo(req: NextApiRequestCollect) {
@@ -140,6 +147,7 @@ export async function getClientInfo(req: NextApiRequestCollect) {
   const subdivision2 = location?.subdivision2;
   const city = location?.city;
   const browser = browserName(userAgent);
+
   const appInfo = req.headers['x-massivepixel-appinfo'] || "";
   if (!!appInfo) {
     console.log(`Client app: ${appInfo}`)
