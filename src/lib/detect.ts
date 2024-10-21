@@ -130,7 +130,9 @@ function detectAppOs(appInfo: string) {
 function detectAppDevice(appInfo: string) {
   switch (appInfo) {
     case 'iPhone':
+    case 'iphone':
     case 'Android':
+    case 'android':
       return 'mobile';
     case 'iPad':
       return 'tablet';
