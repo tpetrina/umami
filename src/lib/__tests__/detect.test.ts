@@ -20,3 +20,20 @@ test('getIpAddress: Standard header', () => {
 test('getIpAddress: No header', () => {
   expect(detect.getIpAddress(new Headers())).toEqual(null);
 });
+
+test.each([
+  ['os=Android; device=mobile', 'Android'],
+  ['os=iOS; device=mobile', 'iOS'],
+])('detectAppOs: %s should return %s', (input, expected) => {
+  const actual = detect.detectAppOs(input);
+  expect(actual).toBe(expected);
+});
+
+test.each([
+  ['os=Android; device=mobile', 'mobile'],
+  ['os=iOS; device=mobile', 'mobile'],
+  ['os=iPad; device=tablet', 'tablet'],
+])('detectAppDevice: %s should return %s', (input, expected) => {
+  const actual = detect.detectAppDevice(input);
+  expect(actual).toBe(expected);
+});
