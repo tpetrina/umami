@@ -131,6 +131,32 @@ export async function getLocation(ip: string, req: NextApiRequestCollect) {
   }
 }
 
+// appInfo is formatted
+// os=OS; device=DEVICE
+// e.g. os=Android; device=mobile
+// e.g. os=iOS; device=mobile
+// e.g. os=iPad; device=tablet
+
+export function detectAppOs(appInfo: string) {
+  return appInfo.match(/os=(\w+)/)?.[1];
+}
+
+export function detectAppDevice(appInfo: string) {
+  const device = appInfo.match(/device=(\w+)/)?.[1];
+
+  switch (device) {
+    case 'iPhone':
+    case 'iphone':
+    case 'Android':
+    case 'android':
+      return 'mobile';
+    case 'iPad':
+      return 'tablet';
+  }
+
+  return undefined;
+}
+
 export async function getClientInfo(req: NextApiRequestCollect) {
   const userAgent = req.headers['user-agent'];
   const ip = req.body?.payload?.ip || getIpAddress(req);
@@ -139,9 +165,12 @@ export async function getClientInfo(req: NextApiRequestCollect) {
   const subdivision1 = location?.subdivision1;
   const subdivision2 = location?.subdivision2;
   const city = location?.city;
-  const browser = browserName(userAgent);
-  const os = detectOS(userAgent) as string;
-  const device = getDevice(req.body?.payload?.screen, os);
+
+  const appInfo = req.headers['umami-appinfo'] || '';
+
+  const os = detectAppOs(appInfo) || (detectOS(userAgent) as string);
+  const device = detectAppDevice(appInfo) || getDevice(req.body?.payload?.screen, os);
+  const browser = appInfo ? 'App' : browserName(userAgent);
 
   return { userAgent, browser, os, ip, country, subdivision1, subdivision2, city, device };
 }
