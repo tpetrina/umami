@@ -224,6 +224,7 @@ export const EVENT_NAME_LENGTH = 50;
 export const UTM_PARAMS = ['utm_campaign', 'utm_content', 'utm_medium', 'utm_source', 'utm_term'];
 
 export const OS_NAMES = {
+  Android: 'Android',
   'Android OS': 'Android',
   'Chrome OS': 'ChromeOS',
   'Mac OS': 'macOS',
