@@ -1,4 +1,5 @@
 import { getIpAddress } from '../ip';
+import { detectAppOs, detectAppDevice } from '../detect';
 
 const IP = '127.0.0.1';
 const BAD_IP = '127.127.127.127';
@@ -19,4 +20,21 @@ test('getIpAddress: Standard header', () => {
 
 test('getIpAddress: No header', () => {
   expect(getIpAddress(new Headers())).toEqual(undefined);
+});
+
+test.each([
+  ['os=Android; device=mobile', 'Android'],
+  ['os=iOS; device=mobile', 'iOS'],
+])('detectAppOs: %s should return %s', (input, expected) => {
+  const actual = detectAppOs(input);
+  expect(actual).toBe(expected);
+});
+
+test.each([
+  ['os=Android; device=mobile', 'mobile'],
+  ['os=iOS; device=mobile', 'mobile'],
+  ['os=iPad; device=tablet', 'tablet'],
+])('detectAppDevice: %s should return %s', (input, expected) => {
+  const actual = detectAppDevice(input);
+  expect(actual).toBe(expected);
 });
