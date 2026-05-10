@@ -1,5 +1,20 @@
 import ipaddr from 'ipaddr.js';
 
+/** Trim proxy/header noise; ipaddr.parse rejects leading/trailing whitespace. */
+function trimIpCandidate(ip?: string | null) {
+  if (ip === undefined || ip === null) {
+    return ip;
+  }
+
+  let s = ip.trim();
+
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim();
+  }
+
+  return s;
+}
+
 export const IP_ADDRESS_HEADERS = [
   ...(process.env.CLOUD_MODE ? ['x-umami-client-ip'] : []), // Umami custom header (cloud mode only)
   'true-client-ip', // CDN
@@ -39,6 +54,7 @@ function normalizeIp(ip?: string | null) {
 }
 
 function resolveIp(ip?: string | null) {
+  ip = trimIpCandidate(ip);
   if (!ip) return ip;
 
   // First, try as-is
@@ -70,7 +86,7 @@ export function getIpAddress(headers: Headers) {
     return resolveIp(headers.get(customHeader));
   }
 
-  const header = IP_ADDRESS_HEADERS.find(name => headers.get(name));
+  const header = IP_ADDRESS_HEADERS.find((name) => headers.get(name));
   if (!header) {
     return undefined;
   }

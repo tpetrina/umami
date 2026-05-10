@@ -76,6 +76,21 @@ function decodeHeader(s: string | undefined | null): string | undefined | null {
   return Buffer.from(s, 'latin1').toString('utf-8');
 }
 
+/**
+ * Edge geo headers (e.g. cf-ipcountry) describe the CDN's view of the request, which can
+ * disagree with the visitor IP when a reverse proxy sets CLIENT_IP_HEADER. Body `payload.ip`
+ * is also untrusted relative to those headers — both cases should use MaxMind for the given IP.
+ */
+export function skipEdgeLocationHeaders(headers: Headers, payload: Record<string, any>): boolean {
+  if (payload?.ip) {
+    return true;
+  }
+
+  const custom = process.env.CLIENT_IP_HEADER?.trim();
+
+  return !!(custom && headers.get(custom));
+}
+
 export async function getLocation(ip: string = '', headers: Headers, skipHeaders: boolean) {
   // Ignore local ips
   if (!ip || (await isLocalhost(ip))) {
@@ -103,9 +118,7 @@ export async function getLocation(ip: string = '', headers: Headers, skipHeaders
   if (!globalThis[MAXMIND]) {
     const dir = path.join(process.cwd(), 'geo');
 
-    globalThis[MAXMIND] = await maxmind.open(
-      process.env.GEOLITE_DB_PATH || path.resolve(dir, 'GeoLite2-City.mmdb'),
-    );
+    globalThis[MAXMIND] = await maxmind.open(process.env.GEOLITE_DB_PATH || path.resolve(dir, 'GeoLite2-City.mmdb'));
   }
 
   const result = globalThis[MAXMIND]?.get(stripPort(ip));
@@ -157,7 +170,7 @@ export function detectAppDevice(appInfo: string) {
 export async function getClientInfo(request: Request, payload: Record<string, any>) {
   const userAgent = payload?.userAgent || request.headers.get('user-agent');
   const ip = payload?.ip || getIpAddress(request.headers);
-  const location = await getLocation(ip, request.headers, !!payload?.ip);
+  const location = await getLocation(ip, request.headers, skipEdgeLocationHeaders(request.headers, payload));
   const country = safeDecodeURIComponent(location?.country);
   const region = safeDecodeURIComponent(location?.region);
   const city = safeDecodeURIComponent(location?.city);
@@ -167,6 +180,8 @@ export async function getClientInfo(request: Request, payload: Record<string, an
   const browser = appInfo ? 'App' : (payload?.browser ?? browserName(userAgent));
   const os = detectAppOs(appInfo) || (payload?.os ?? (detectOS(userAgent) as string));
   const device = detectAppDevice(appInfo) || (payload?.device ?? getDevice(userAgent, payload?.screen));
+
+  console.log('getClientInfo', { userAgent, browser, os, ip, country, region, city, device });
 
   return { userAgent, browser, os, ip, country, region, city, device };
 }
@@ -178,10 +193,10 @@ export function hasBlockedIp(clientIp: string) {
     const ips = [];
 
     if (ignoreIps) {
-      ips.push(...ignoreIps.split(',').map(n => n.trim()));
+      ips.push(...ignoreIps.split(',').map((n) => n.trim()));
     }
 
-    return ips.find(ip => {
+    return ips.find((ip) => {
       if (ip === clientIp) {
         return true;
       }
